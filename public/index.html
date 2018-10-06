@@ -1,0 +1,212 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>CRUD Recetas</title>
+
+  <!-- CSS -->
+  <!-- DataTable -->
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedheader/3.1.5/css/fixedHeader.bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet"  href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+  <!-- End CSS -->
+
+  <!-- JavaScript -->
+  <!-- JQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+  <!-- Vue.js -->
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.7.0/vue-resource.min.js"></script>
+
+  <!-- dataTable -->
+  <script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+  <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+  <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
+  <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+  <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+  <!-- End JavaScript -->
+
+</head>
+<body>
+  <div class="row">
+    <div class="col-md-8">
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-8">
+      <div class="panel">
+        <div class="panel-heading">
+          <h class="panel-title">Listado de Recetas</h>
+        </div>
+        <div class="panel-body">
+          <!-- Form -->
+          <div class="form-group">
+            <label for="name">Nombre:</label>
+            <input type="text"
+            class="form-control"
+            placeholder="Nombre"
+            v-on:keyup.enter="createRecipe"
+            v-model="newRecipe.name">
+
+            <label for="des">Descripción:</label>
+            <input type="text"
+            class="form-control"
+            placeholder="Descripción"
+            v-on:keyup.enter="createRecipe"
+            v-model="newRecipe.description">
+
+            <label for="ing">Ingredientes:</label>
+            <textarea rows="5"
+            class="form-control"
+            placeholder="Ingredientes"
+            v-on:keyup.enter="createRecipe"
+            v-model="newRecipe.ingredients">
+          </textarea>
+
+          <span class="input-group-btn">
+            <button class="btn btn-primary" type="button" v-on:click="createRecipe">Nueva Receta</button>
+          </span>
+        </div>
+        <!-- Table -->
+        <table id="tabla_recetas" cellspacing="0" width="100%" style="width: 100%;" aria-describedby="demo-dt-basic_info" class="table table-striped table-bordered dataTable no-footer dtr-inline">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Ingredientes</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" class="even" v-for="recipe in recipes">
+              <td>{{ recipe.name }}</td>
+              <td>{{ recipe.description }}</td>
+              <td>{{ recipe.ingredients }}</td>
+              <td class="flex-item">
+                <button type="button" class="btn btn-info btn-sm"
+                v-on:click="loadData($index)">Cargar Datos
+              </button>
+              <button type="button" class="btn btn-primary btn-sm"
+              v-on:click="updateRecipe($index)">Editar
+            </button>
+            <button type="button" class="btn btn-danger btn-sm"
+            v-on:click="deleteRecipe($index)">Eliminar
+          </button>
+        </button>
+      </td>
+    </tbody>
+  </table>
+</div>
+</div>
+</div>
+</div>
+
+<!--
+<script type="text/javascript" class="init">
+$(document).ready(function() {
+var table = $('#tabla_recetas').DataTable( {
+responsive: true
+} );
+
+new $.fn.dataTable.FixedHeader( table );
+} );
+</script>
+-->
+
+<script>
+
+var app = new Vue({
+  el: 'body',
+
+  data: {
+    recipes: [], //List of recipes
+    //Used to create or update a recipe
+    newRecipe: {
+      name: "",
+      description: "",
+      ingredients: ""
+    }
+  },
+
+  // Initilize the page with the recipe list.
+  created: function() {
+    // Use the vue-resource $http client to get the recipe data
+    this.$http.get('/recipes').then(function(response) {
+      this.recipes = response.data.items ? response.data.items : []
+    })
+  },
+
+  methods: {
+    //Function called to create a new recipe
+    createRecipe: function() {
+      //Validation about empty fields
+      if (!$.trim(this.newRecipe.name) ||
+      !$.trim(this.newRecipe.description) ||
+      !$.trim(this.newRecipe.ingredients)) {
+        alert("Ningún campo debe estar vacío");
+        return
+      }
+
+      // Post the new recipe to the /recipes route using the $http client
+      this.$http.put('/recipes', this.newRecipe).success(function(response) {
+        this.newRecipe.id = response.created //We take the if from the response
+        this.recipes.push(this.newRecipe) //Insert to the table
+        //Re initialize
+        this.newRecipe = {
+          name: "",
+          description: "",
+          ingredients: ""
+        }
+      }).error(function(error) {
+        console.log(error)
+      });
+    },
+
+    //Function called to delete a recipe
+    deleteRecipe: function(index) {
+      // Use the $http client to delete a recipe by its id
+      this.$http.delete('/recipes/' + this.recipes[index].id).success(function(response) {
+        this.recipes.splice(index, 1) //delete from the table
+      }).error(function(error) {
+        console.log(error)
+      })
+    },
+
+    //Function called to load data to the form
+    loadData: function(index) {
+      this.newRecipe.name = this.recipes[index].name
+      this.newRecipe.description = this.recipes[index].description
+      this.newRecipe.ingredients = this.recipes[index].ingredients
+  },
+
+    //Function called to update a recipe
+    updateRecipe: function(index) {
+      // Use the $http client to update a recipe by its id
+      this.$http.post('/recipes/' + this.recipes[index].id, this.newRecipe).success(function(response) {
+        this.newRecipe.id = response.updated //We take the if from the response
+        this.recipes.splice(index, 1, this.newRecipe) //Repĺace in the table
+        //Re initialize
+        this.newRecipe = {
+          name: "",
+          description: "",
+          ingredients: ""
+        }
+      }).error(function(error) {
+        console.log(error)
+      })
+    }
+  }
+})
+</script>
+</body>
+</html>

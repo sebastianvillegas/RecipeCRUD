@@ -191,6 +191,13 @@ var app = new Vue({
 
     //Function called to update a recipe
     updateRecipe: function(index) {
+      //Validation about empty fields
+      if (!$.trim(this.newRecipe.name) ||
+      !$.trim(this.newRecipe.description) ||
+      !$.trim(this.newRecipe.ingredients)) {
+        alert("Carga los datos de alguna receta, ningún campo debe estar vacío");
+        return
+      }
       // Use the $http client to update a recipe by its id
       this.$http.post('/recipes/' + this.recipes[index].id, this.newRecipe).success(function(response) {
         this.newRecipe.id = response.updated //We take the if from the response

@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 )
 
 //Struct modeling a recipe with its fields
@@ -19,7 +20,7 @@ type RecipeCollection struct {
 
 // GetRecipes from the DB, make the query to get the recipes
 func GetRecipes(db *sql.DB) RecipeCollection {
-	sql := "SELECT * FROM Recipes"
+	sql := "SELECT * FROM recipes.recipes"
 	//Executes the SQL Query
 	rows, err := db.Query(sql)
 	// Exit if the SQL doesn't work for some reason
@@ -48,7 +49,7 @@ func GetRecipes(db *sql.DB) RecipeCollection {
 
 // PutRecipe into DB, make the query to insert the recipe
 func PutRecipe(db *sql.DB, name string, description string, ingredients string) (int64, error) {
-	sql := "INSERT INTO Recipes(name, description, ingredients) VALUES(?,?,?)"
+	sql := "INSERT INTO recipes.recipes(name, description, ingredients) VALUES($1,$2,$3) RETURNING id"
 	// Create a prepared SQL statement
 	stmt, err := db.Prepare(sql)
 	// Exit if we get an error
@@ -60,17 +61,20 @@ func PutRecipe(db *sql.DB, name string, description string, ingredients string) 
 
 	// Replace the '?' in our prepared statement with 'name, description and ingredients'
 	//Execute the query
-	result, err2 := stmt.Exec(name, description, ingredients)
+	var recipeID int64
+	err2 := stmt.QueryRow(name, description, ingredients).Scan(&recipeID)
 	// Exit if we get an error
 	if err2 != nil {
 		panic(err2)
 	}
-	return result.LastInsertId()
+
+	fmt.Print(recipeID)
+	return recipeID, err2
 }
 
 // UpdateRecipe into DB, make the query to update a recipe
 func UpdateRecipe(db *sql.DB, id int, name string, description string, ingredients string) (int64, error) {
-	sql := "UPDATE Recipes SET name = ?, description = ?, ingredients = ? WHERE id = ?"
+	sql := "UPDATE recipes.recipes SET name = $1, description = $2, ingredients = $3 WHERE id = $4"
 
 	// Create a prepared SQL statement
 	stmt, err := db.Prepare(sql)
@@ -94,7 +98,8 @@ func UpdateRecipe(db *sql.DB, id int, name string, description string, ingredien
 
 // DeleteRecipe into DB, make the query to delete a recipe
 func DeleteRecipe(db *sql.DB, id int) (int64, error) {
-	sql := "DELETE FROM Recipes WHERE id = ?"
+	fmt.Print("id = ", id, "asd")
+	sql := "DELETE FROM recipes.recipes WHERE id = $1"
 
 	// Create a prepared SQL statement
 	stmt, err := db.Prepare(sql)

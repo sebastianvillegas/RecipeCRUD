@@ -5,12 +5,12 @@ import (
 	"recetas/handlers"
 
 	"github.com/labstack/echo"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 )
 
 //Create the connection to db.
-func initDB(filepath string) *sql.DB {
-	db, err := sql.Open("sqlite3", filepath)
+func initDB(addr string) *sql.DB {
+	db, err := sql.Open("postgres", addr)
 
 	// Here we check for any db errors
 	if err != nil {
@@ -27,11 +27,13 @@ func initDB(filepath string) *sql.DB {
 //First SQL Instructions to create tables.
 func migrate(db *sql.DB) {
 	sql := `
+	CREATE SEQUENCE IF NOT EXISTS customer_seq;
+
 	CREATE TABLE IF NOT EXISTS Recipes(
-		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-		name VARCHAR NOT NULL,
-    description VARCHAR NOT NULL,
-    ingredients VARCHAR NOT NULL
+		id INT PRIMARY KEY DEFAULT nextval('customer_seq'),
+		name STRING NOT NULL,
+    description STRING NOT NULL,
+    ingredients STRING NOT NULL
 	);
 	`
 	_, err := db.Exec(sql)
@@ -42,8 +44,8 @@ func migrate(db *sql.DB) {
 }
 
 func main() {
-
-	db := initDB("storage.db")
+	addr := "postgresql://maxroach@localhost:26257/recipes?sslmode=disable"
+	db := initDB(addr)
 	migrate(db)
 
 	//Use echo for the server administration
@@ -55,6 +57,6 @@ func main() {
 	e.POST("/recipes/:id", handlers.UpdateRecipe(db))   //update the recipes
 	e.DELETE("/recipes/:id", handlers.DeleteRecipe(db)) //delete the recipes
 
-	e.Start(":8080") //Run the server on port 8080.
+	e.Start(":8081") //Run the server on port 8080.
 
 }

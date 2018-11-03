@@ -111,17 +111,18 @@
 </div>
 </div>
 
-<!--
+
 <script type="text/javascript" class="init">
 $(document).ready(function() {
 var table = $('#tabla_recetas').DataTable( {
-responsive: true
+responsive: true,
+"paging": false
 } );
 
 new $.fn.dataTable.FixedHeader( table );
 } );
 </script>
--->
+
 
 <script>
 
@@ -167,6 +168,8 @@ var app = new Vue({
           description: "",
           ingredients: ""
         }
+        table.draw()
+
       }).error(function(error) {
         console.log(error)
       });
@@ -191,7 +194,6 @@ var app = new Vue({
 
     //Function called to update a recipe
     updateRecipe: function(index) {
-      //Validation about empty fields
       if (!$.trim(this.newRecipe.name) ||
       !$.trim(this.newRecipe.description) ||
       !$.trim(this.newRecipe.ingredients)) {

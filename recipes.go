@@ -10,6 +10,7 @@ import (
 
 //Create the connection to db.
 func initDB(addr string) *sql.DB {
+	//Create the connection
 	db, err := sql.Open("postgres", addr)
 
 	// Here we check for any db errors
@@ -36,6 +37,7 @@ func migrate(db *sql.DB) {
     ingredients STRING NOT NULL
 	);
 	`
+	//Execute the Query
 	_, err := db.Exec(sql)
 	// Exit if something goes wrong with our SQL statement above
 	if err != nil {
@@ -57,6 +59,6 @@ func main() {
 	e.POST("/recipes/:id", handlers.UpdateRecipe(db))   //update the recipes
 	e.DELETE("/recipes/:id", handlers.DeleteRecipe(db)) //delete the recipes
 
-	e.Start(":8081") //Run the server on port 8080.
+	e.Start(":8081") //Run the server on port 8081.
 
 }

@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"fmt"
 )
 
 //Struct modeling a recipe with its fields
@@ -59,16 +58,16 @@ func PutRecipe(db *sql.DB, name string, description string, ingredients string) 
 	// Make sure to cleanup after the program exits
 	defer stmt.Close()
 
-	// Replace the '?' in our prepared statement with 'name, description and ingredients'
+	// Replace the '$n' in our prepared statement with 'name, description and ingredients'
 	//Execute the query
 	var recipeID int64
+	//The sql stat will return the id, so we can use it.
 	err2 := stmt.QueryRow(name, description, ingredients).Scan(&recipeID)
 	// Exit if we get an error
 	if err2 != nil {
 		panic(err2)
 	}
 
-	fmt.Print(recipeID)
 	return recipeID, err2
 }
 
@@ -98,7 +97,6 @@ func UpdateRecipe(db *sql.DB, id int, name string, description string, ingredien
 
 // DeleteRecipe into DB, make the query to delete a recipe
 func DeleteRecipe(db *sql.DB, id int) (int64, error) {
-	fmt.Print("id = ", id, "asd")
 	sql := "DELETE FROM recipes.recipes WHERE id = $1"
 
 	// Create a prepared SQL statement
